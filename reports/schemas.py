@@ -20,9 +20,7 @@ class ReportCreate(ReportBase):
 class ReportStatusUpdate(BaseModel):
     """Cuerpo de entrada para cambiar el estado de un reporte."""
 
-    # `str` y no `ReportStatus`: un estado inexistente lo decide el servicio (404),
-    # no la validación de Pydantic (422).
-    status: str
+    status: ReportStatus
 
 
 class Report(ReportBase):

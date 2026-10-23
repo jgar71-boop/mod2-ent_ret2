@@ -41,6 +41,60 @@ def test_list_reports_filtra_por_user_id(client: TestClient) -> None:
     assert cuerpos[0]["user_id"] == 1
 
 
+def _create_report(client: TestClient) -> int:
+    return client.post("/reports", json=_payload()).json()["id"]
+
+
+def test_create_report_nace_open(client: TestClient) -> None:
+    response = client.post("/reports", json=_payload())
+
+    assert response.status_code == 201
+    assert response.json()["status"] == "open"
+
+
+def test_update_status_open_a_in_progress_devuelve_200(client: TestClient) -> None:
+    report_id = _create_report(client)
+
+    response = client.patch(f"/reports/{report_id}/status", json={"status": "in_progress"})
+
+    assert response.status_code == 200
+    assert response.json()["status"] == "in_progress"
+
+
+def test_update_status_in_progress_a_closed_devuelve_200(client: TestClient) -> None:
+    report_id = _create_report(client)
+    client.patch(f"/reports/{report_id}/status", json={"status": "in_progress"})
+
+    response = client.patch(f"/reports/{report_id}/status", json={"status": "closed"})
+
+    assert response.status_code == 200
+    assert response.json()["status"] == "closed"
+    assert client.get(f"/reports/{report_id}").json()["status"] == "closed"
+
+
+def test_update_status_transicion_invalida_devuelve_409(client: TestClient) -> None:
+    report_id = _create_report(client)
+
+    response = client.patch(f"/reports/{report_id}/status", json={"status": "closed"})
+
+    assert response.status_code == 409
+    assert client.get(f"/reports/{report_id}").json()["status"] == "open"
+
+
+def test_update_status_desconocido_devuelve_422(client: TestClient) -> None:
+    report_id = _create_report(client)
+
+    response = client.patch(f"/reports/{report_id}/status", json={"status": "foo"})
+
+    assert response.status_code == 422
+
+
+def test_update_status_reporte_inexistente_devuelve_404(client: TestClient) -> None:
+    response = client.patch("/reports/999/status", json={"status": "in_progress"})
+
+    assert response.status_code == 404
+
+
 def test_ids_unicos_bajo_concurrencia() -> None:
     """Crear 30 reportes en paralelo debe producir 30 ids distintos."""
     reports_repository.reset()
