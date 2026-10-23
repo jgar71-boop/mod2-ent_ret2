@@ -13,6 +13,9 @@ el proyecto corre sin infraestructura.
   - `repository.py` — acceso a datos (aquí, un `dict` en memoria).
 - `core/errors.py` — catálogo de errores. Toda respuesta de error sale de aquí.
 - `tests/` — un archivo por recurso: `test_<recurso>.py`.
+  Excepción: `tests/test_valida_report.py` reúne los tests de validaciones de `reports`
+  (usuario existente al crear, cambios de estado simultáneos); el resto de los tests de
+  `reports` sigue en `tests/test_reports.py`.
 
 ## Convenciones
 

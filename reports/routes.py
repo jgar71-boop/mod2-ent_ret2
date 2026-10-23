@@ -1,4 +1,8 @@
-"""Rutas HTTP del recurso `reports`."""
+"""Rutas HTTP del recurso `reports`.
+
+Sin lógica de negocio: cada ruta delega en `service.py`. Los docstrings de las
+rutas son la descripción que se muestra en ``/docs``.
+"""
 from fastapi import APIRouter, Header, Query, status
 from pydantic import BaseModel
 
@@ -10,11 +14,14 @@ router = APIRouter(prefix="/reports", tags=["reports"])
 
 
 class ExportResult(BaseModel):
+    """Resultado de una exportación: solo el nombre del archivo generado."""
+
     filename: str
 
 
 @router.get("", response_model=list[Report])
 def list_reports(user_id: int | None = Query(default=None)) -> list[Report]:
+    """Lista los reportes. Con ``user_id``, solo los de ese usuario."""
     return service.list_reports(user_id=user_id)
 
 
@@ -35,14 +42,24 @@ def export_reports(
 
 @router.get("/{report_id}", response_model=Report)
 def get_report(report_id: int) -> Report:
+    """Devuelve un reporte por id. 404 si no existe."""
     return service.get_report(report_id)
 
 
 @router.patch("/{report_id}/status", response_model=Report)
 def update_report_status(report_id: int, data: ReportStatusUpdate) -> Report:
-    return service.add_status(report_id, data)
+    """Avanza el estado del reporte: ``open → in_progress → closed``.
+
+    404 si el reporte no existe; 409 si la transición no está permitida o si otro
+    cambio simultáneo ganó; 422 si el estado no es válido.
+    """
+    return service.update_report_status(report_id, data)
 
 
 @router.post("", response_model=Report, status_code=status.HTTP_201_CREATED)
 def create_report(data: ReportCreate) -> Report:
+    """Crea un reporte en estado ``open``.
+
+    404 si el usuario no existe; 422 si el cuerpo supera 500 caracteres.
+    """
     return service.create_report(data)
