@@ -31,6 +31,14 @@ def already_exists(resource: str, identifier: object) -> HTTPException:
     )
 
 
+def conflict(message: str) -> HTTPException:
+    """409 — la petición choca con el estado actual del recurso."""
+    return HTTPException(
+        status_code=status.HTTP_409_CONFLICT,
+        detail=message,
+    )
+
+
 def unauthorized(message: str = "no autorizado") -> HTTPException:
     """401 — falta autenticación o es inválida."""
     return HTTPException(

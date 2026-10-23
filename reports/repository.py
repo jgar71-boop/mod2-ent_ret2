@@ -33,6 +33,13 @@ def get(report_id: int) -> Report | None:
     return _reports.get(report_id)
 
 
+def update_status(report_id: int, status: str) -> Report:
+    with _lock:
+        report = _reports[report_id].model_copy(update={"status": status})
+        _reports[report_id] = report
+    return report
+
+
 def list_all() -> list[Report]:
     return list(_reports.values())
 

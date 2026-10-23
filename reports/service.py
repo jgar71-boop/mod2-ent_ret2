@@ -1,9 +1,19 @@
 """Lógica de negocio del recurso `reports`."""
+from typing import get_args
+
 from core import errors
 from reports import repository
-from reports.schemas import Report, ReportCreate, ReportStatusUpdate
+from reports.schemas import Report, ReportCreate, ReportStatus, ReportStatusUpdate
 
 MAX_BODY_LEN = 500
+
+VALID_STATUSES = set(get_args(ReportStatus))
+
+# Transiciones permitidas: open → in_progress → closed.
+ALLOWED_TRANSITIONS = {
+    "open": "in_progress",
+    "in_progress": "closed",
+}
 
 
 def create_report(data: ReportCreate) -> Report:
@@ -22,11 +32,14 @@ def get_report(report_id: int) -> Report:
 
 
 def add_status(report_id: int, data: ReportStatusUpdate) -> Report:
-    # TODO: buscar el reporte; si no existe → errors.not_found("reporte", report_id).
-    # TODO: validar que data.status sea un estado permitido → errors.invalid_request(...).
-    # TODO: validar la transición desde el estado actual (¿hay transiciones prohibidas?).
-    # TODO: persistir el cambio vía repository (falta una función de actualización).
-    raise NotImplementedError
+    report = get_report(report_id)  # 404 si no existe
+    if data.status not in VALID_STATUSES:
+        raise errors.not_found("estado", data.status)
+    if ALLOWED_TRANSITIONS.get(report.status) != data.status:
+        raise errors.conflict(
+            f"transición de estado inválida: {report.status} → {data.status}"
+        )
+    return repository.update_status(report_id, data.status)
 
 
 def list_reports(user_id: int | None = None) -> list[Report]:

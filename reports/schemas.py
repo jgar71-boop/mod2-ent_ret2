@@ -1,7 +1,10 @@
 """Schemas Pydantic del recurso `reports`."""
 from datetime import datetime
+from typing import Literal
 
 from pydantic import BaseModel, Field
+
+ReportStatus = Literal["open", "in_progress", "closed"]
 
 
 class ReportBase(BaseModel):
@@ -17,7 +20,8 @@ class ReportCreate(ReportBase):
 class ReportStatusUpdate(BaseModel):
     """Cuerpo de entrada para cambiar el estado de un reporte."""
 
-    # TODO: restringir a los estados permitidos (¿Literal / Enum?).
+    # `str` y no `ReportStatus`: un estado inexistente lo decide el servicio (404),
+    # no la validación de Pydantic (422).
     status: str
 
 
@@ -26,3 +30,4 @@ class Report(ReportBase):
 
     id: int
     created_at: datetime
+    status: ReportStatus = "open"
