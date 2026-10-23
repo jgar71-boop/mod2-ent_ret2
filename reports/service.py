@@ -1,7 +1,7 @@
 """Lógica de negocio del recurso `reports`."""
 from core import errors
 from reports import repository
-from reports.schemas import Report, ReportCreate
+from reports.schemas import Report, ReportCreate, ReportStatusUpdate
 
 MAX_BODY_LEN = 500
 
@@ -19,6 +19,14 @@ def get_report(report_id: int) -> Report:
     if report is None:
         raise errors.not_found("reporte", report_id)
     return report
+
+
+def add_status(report_id: int, data: ReportStatusUpdate) -> Report:
+    # TODO: buscar el reporte; si no existe → errors.not_found("reporte", report_id).
+    # TODO: validar que data.status sea un estado permitido → errors.invalid_request(...).
+    # TODO: validar la transición desde el estado actual (¿hay transiciones prohibidas?).
+    # TODO: persistir el cambio vía repository (falta una función de actualización).
+    raise NotImplementedError
 
 
 def list_reports(user_id: int | None = None) -> list[Report]:

@@ -4,7 +4,7 @@ from pydantic import BaseModel
 
 from core import errors
 from reports import export, service
-from reports.schemas import Report, ReportCreate
+from reports.schemas import Report, ReportCreate, ReportStatusUpdate
 
 router = APIRouter(prefix="/reports", tags=["reports"])
 
@@ -36,6 +36,11 @@ def export_reports(
 @router.get("/{report_id}", response_model=Report)
 def get_report(report_id: int) -> Report:
     return service.get_report(report_id)
+
+
+@router.patch("/{report_id}/status", response_model=Report)
+def update_report_status(report_id: int, data: ReportStatusUpdate) -> Report:
+    return service.add_status(report_id, data)
 
 
 @router.post("", response_model=Report, status_code=status.HTTP_201_CREATED)

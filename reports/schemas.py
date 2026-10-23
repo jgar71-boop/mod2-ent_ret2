@@ -14,6 +14,13 @@ class ReportCreate(ReportBase):
     """Cuerpo de entrada para crear un reporte."""
 
 
+class ReportStatusUpdate(BaseModel):
+    """Cuerpo de entrada para cambiar el estado de un reporte."""
+
+    # TODO: restringir a los estados permitidos (¿Literal / Enum?).
+    status: str
+
+
 class Report(ReportBase):
     """Reporte tal como lo devuelve la API."""
 
