@@ -18,7 +18,18 @@ el proyecto corre sin infraestructura.
 
 - Las rutas declaran `response_model=` y devuelven modelos Pydantic, nunca `dict` crudos.
 - Los errores se levantan con las funciones de `core/errors.py`
-  (`not_found`, `invalid_request`, `already_exists`), no con `HTTPException` a mano.
+  (`not_found`, `invalid_request`, `already_exists`, `conflict`, `unauthorized`),
+  no con `HTTPException` a mano. `already_exists` es solo para duplicados al crear;
+  un 409 porque la operación choca con el estado actual del recurso usa `conflict`.
+- Los valores cerrados (p. ej. estados) se definen una vez en `schemas.py` como `Literal`
+  y se usan en los modelos de entrada y salida. Un valor fuera de la lista lo rechaza
+  Pydantic (422); el servicio no lo vuelve a validar.
+- Los campos que decide el servidor (`id`, `created_at`, el estado inicial) van solo en
+  el modelo de salida, nunca en `*Create`.
+- Las transiciones de estado permitidas se declaran como tabla en `service.py`
+  (p. ej. `ALLOWED_TRANSITIONS`); una transición inválida responde 409 (`conflict`).
+  Orden de chequeo en el servicio: existe el recurso (404, reutilizando `get_<recurso>`)
+  → transición válida (409) → persistir.
 - La ruta delega en `service.py`; la lógica y las decisiones de error viven ahí.
 - Identificadores en inglés y `snake_case`, sin abreviaturas. Mensajes de error en español.
 - Cada endpoint nuevo lleva su test en el archivo del recurso, con al menos un caso
